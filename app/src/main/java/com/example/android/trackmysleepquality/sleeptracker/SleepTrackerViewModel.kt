@@ -20,6 +20,7 @@ import android.app.Application
 import android.provider.SyncStateContract.Helpers.insert
 import android.text.method.TextKeyListener.clear
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
@@ -83,8 +84,11 @@ class SleepTrackerViewModel(
         uiScope.launch {
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
+            _navigateToSleepQuality.value = oldNight
             update(oldNight)
+
         }
+
     }
     private suspend fun update(night: SleepNight) {
         withContext(Dispatchers.IO) {
@@ -101,5 +105,13 @@ class SleepTrackerViewModel(
         withContext(Dispatchers.IO){
             database.clear()
         }
+    }
+
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+
+    val navigateToSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+    fun doneNavigating() {
+        _navigateToSleepQuality.value = null
     }
 }
